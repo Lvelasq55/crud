@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { isEmpty, size } from 'lodash'
-import shortid from 'shortid'
+import { addDocument, deleteDocument, getCollection, updateDocument } from './actions'
 
   function App() {
     const [task, setTask] = useState("")
@@ -9,34 +9,50 @@ import shortid from 'shortid'
     const [id, setId] = useState("")
     const [error, setError] = useState(null)
 
-  const validForm = () => {
-    let isValid = true
-    setError(null)
+    useEffect(() => {
+      (async () => {
+        const result = await getCollection("tasks")
+        if (result.statusResponse){
+          setTasks(result.data)
+        }
+      })()
+    }, [])
 
-    if (isEmpty(task)){
-      setError("Debes ingresar una tarea.")
-      isValid = false
+    const validForm = () => {
+      let isValid = true
+      setError(null)
+
+      if (isEmpty(task)){
+          
+        isValid = false
+      }
+      return isValid
     }
-    return isValid
-  }
 
-    const addTask = (e) => {
+    const addTask = async(e) => {
       e.preventDefault()
 
       if (!validForm()){
         return 
       }
 
-      const newTask = {
-        id: shortid.generate(),
-        name: task
+      const result = await addDocument("tasks", {name : task })
+      if (!result.statusResponse){
+        setError(result.error)
+        return
       }
 
-      setTasks([ ...tasks, newTask ])
+      setTasks([ ...tasks, {id : result.data.id, name: task}])
       setTask("")
     }
 
-    const deleteTask = (id) => {
+    const deleteTask = async(id) => {
+      const result = await deleteDocument("tasks", id)
+      if (!result.statusResponse) {
+        setError(result.error)
+        return
+      }
+
       const filteredTask = tasks.filter(task => task.id !== id)
       setTasks(filteredTask)
     }
@@ -47,7 +63,7 @@ import shortid from 'shortid'
       setId(theTask.id)
     }
 
-    const saveTask = (e) => {
+    const saveTask = async(e) => {
       e.preventDefault()
       if (!validForm()){
         return 
@@ -57,10 +73,11 @@ import shortid from 'shortid'
       setTasks(editedTasks)
       setEditMode(false)
       setTask("")
-      setId("")
+      setId("") 
     }
 
     return (
+      
       <div className="container mt-5">
         <h1>Tareas</h1>
         <hr/>
@@ -83,7 +100,7 @@ import shortid from 'shortid'
                     </button>
                     <button
                       className="btn btn-warning btn-sm float-right"
-                      onClick={() => editTask(task)}>
+                      onClick={() => editTask(tasks)}>
                       Editar
                     </button>
                   </li>
@@ -106,10 +123,11 @@ import shortid from 'shortid'
                 onChange={(text) => setTask(text.target.value)}
                 value={task}
               />
-              <button type="submit" 
+              
+              <Burron type="submit" 
                 className={ editMode ? "btn btn-warning btn-block" : "btn btn-dark btn-block"}>
                 { editMode ? "Guardar" : "Agregar"}
-              </button>
+              </Burron>
             </form>
          </div>
         </div>
