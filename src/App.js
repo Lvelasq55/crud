@@ -23,7 +23,7 @@ import { addDocument, deleteDocument, getCollection, updateDocument } from './ac
       setError(null)
 
       if (isEmpty(task)){
-          
+        setError("Debes ingresar una tarea.")
         isValid = false
       }
       return isValid
@@ -77,7 +77,6 @@ import { addDocument, deleteDocument, getCollection, updateDocument } from './ac
     }
 
     return (
-      
       <div className="container mt-5">
         <h1>Tareas</h1>
         <hr/>
@@ -123,11 +122,10 @@ import { addDocument, deleteDocument, getCollection, updateDocument } from './ac
                 onChange={(text) => setTask(text.target.value)}
                 value={task}
               />
-              
-              <Burron type="submit" 
+              <button type="submit" 
                 className={ editMode ? "btn btn-warning btn-block" : "btn btn-dark btn-block"}>
                 { editMode ? "Guardar" : "Agregar"}
-              </Burron>
+              </button>
             </form>
          </div>
         </div>
